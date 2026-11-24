@@ -1,5 +1,5 @@
 /* Belfort · Repose TRV · service worker : la page s'ouvre sans réseau. */
-var CACHE = 'brt-v1.1';
+var CACHE = 'brt-v1.2';
 var FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
