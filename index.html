@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Repose TRV">
+<meta name="theme-color" content="#274e13">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Repose TRV</title>
+<style>
+  :root{
+    --bg:#f3f5f0; --card:#fff; --ink:#1d2618; --mute:#5d6b55; --line:#dde3d6;
+    --dark:#274e13; --acc:#7fe0a0; --ok:#1f7a3a; --okbg:#e2f3e7; --warn:#8a5a00; --warnbg:#fbf0d9;
+    --red:#b3261e; --redbg:#fbe5e3; --blue:#2a5bb5; --bluebg:#e8eefc; --key:#fff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  button{font:inherit;cursor:pointer;touch-action:manipulation;color:inherit}
+  input,textarea{font:inherit}
+  .hidden{display:none!important}
+  header{position:sticky;top:0;z-index:5;background:var(--dark);color:#fff;
+    padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .title{font-weight:700;font-size:17px}
+  .net{font-size:13px;padding:3px 8px;border-radius:12px;background:rgba(255,255,255,.12);white-space:nowrap}
+  .net.on::before{content:"● ";color:var(--acc)}
+  .net.off::before{content:"● ";color:#ff8a7a}
+  .sub{display:flex;justify-content:space-between;gap:8px;font-size:13px;opacity:.92;margin-top:4px}
+  #who{text-decoration:underline;cursor:pointer;white-space:nowrap}
+  main{padding:10px 10px calc(60px + env(safe-area-inset-bottom,0px))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+  .ftitle{font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+  .ftitle button{border:0;background:none;color:var(--blue);font-size:14px;padding:4px}
+  .lbl{font-size:13px;color:var(--mute);margin:12px 0 6px;display:flex;gap:6px;align-items:center}
+  .lbl b.n{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;
+    background:var(--dark);color:#fff;font-size:13px}
+  .lbl strong{color:var(--ink);font-size:16px}
+  .row{display:flex;gap:8px;align-items:stretch}
+  .inp{flex:1;position:relative;min-width:0}
+  .inp input{width:100%;font-size:20px;padding:12px 44px 12px 12px;border-radius:12px;border:1px solid #cfd4ca;outline:0;background:#fff}
+  .inp input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(42,91,181,.18)}
+  #fCode{font:800 26px ui-monospace,Menlo,Consolas,monospace;letter-spacing:3px;text-transform:uppercase;padding:10px 44px 10px 12px}
+  #fCode::placeholder{font:400 17px -apple-system,BlinkMacSystemFont,Roboto,Arial,sans-serif;letter-spacing:0;text-transform:none;color:#9aa39a}
+  #fLieu::placeholder{color:#9aa39a}
+  .x{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:#eef0ec;color:#555;
+    width:32px;height:32px;border-radius:50%;font-size:15px}
+  .ib{flex:none;width:56px;border:0;border-radius:12px;background:var(--bluebg);font-size:25px}
+  .ib.rec{background:var(--red);color:#fff;animation:pulse 1s infinite}
+  .ib.has{background:var(--okbg)}
+  @keyframes pulse{50%{opacity:.6}}
+  /* pavé hexa */
+  .pad{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+  .pad button{height:50px;border:1px solid #cfd4ca;border-radius:10px;background:var(--key);
+    font:700 22px ui-monospace,Menlo,Consolas,monospace}
+  .pad button.l{background:#eef3ea}
+  .pad button:active{background:#d9e6d2}
+  .pad .w{grid-column:span 3;font:600 17px -apple-system,Roboto,Arial,sans-serif}
+  .pad .s{font:600 15px -apple-system,Roboto,Arial,sans-serif;color:var(--red)}
+  /* tête choisie */
+  .head{margin-top:8px;border-radius:12px;padding:10px;background:#f7f8f5;border:1px solid var(--line);display:flex;gap:10px;align-items:center}
+  .head .c{font:800 30px ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px}
+  .head .t{flex:1;min-width:0;font-size:14px;color:var(--mute)}
+  .head .t b{color:var(--ink);font-size:15px}
+  .head button{flex:none;border:1px solid #cfd4ca;background:#fff;border-radius:10px;padding:8px 10px;font-size:14px}
+  .cands{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .cand{border:1px solid #cfd4ca;background:#fff;border-radius:10px;padding:7px 10px;text-align:left}
+  .cand b{font:800 18px ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;display:block}
+  .cand small{font-size:12px;color:var(--mute)}
+  .note{margin-top:8px;border-radius:10px;padding:8px 10px;font-size:14px}
+  .note.wa{background:var(--warnbg);color:var(--warn)}
+  .note.ok{background:var(--okbg);color:#14532d}
+  .note.in{background:var(--bluebg);color:#24427f}
+  .thumb{display:flex;gap:10px;align-items:center;margin-top:8px}
+  .thumb img{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+  .thumb button{border:0;background:none;color:var(--red);font-size:14px}
+  /* lieu */
+  .types{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+  .ty{border:1px solid #cfd4ca;background:#fff;border-radius:12px;padding:10px 4px;font-size:15px;line-height:1.15}
+  .ty b{display:block;font-size:22px}
+  .ty.sel{background:var(--dark);border-color:var(--dark);color:#fff}
+  .same{display:block;width:100%;border:1px dashed #9fb596;background:#f6faf3;border-radius:12px;padding:10px;margin-bottom:8px;text-align:left;font-size:15px}
+  .canon{margin-top:8px;font-size:17px;font-weight:700;color:var(--ok)}
+  .canon.miss{color:var(--mute);font-weight:400;font-size:14px}
+  .sugs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .sug{border:1px solid #cfd4ca;background:#fff;border-radius:16px;padding:7px 11px;font-size:14px;text-align:left}
+  .sug small{color:var(--mute);margin-left:4px}
+  .floors{display:flex;gap:6px;margin-top:10px;align-items:center}
+  .floors span{font-size:13px;color:var(--mute);margin-right:4px}
+  .fl{flex:1;border:1px solid #cfd4ca;background:#fff;border-radius:10px;padding:9px 4px;font-size:16px;font-weight:600}
+  .fl.sel{background:var(--dark);border-color:var(--dark);color:#fff}
+  .link{border:0;background:none;color:var(--blue);padding:12px 0 2px;font-size:15px}
+  textarea{flex:1;width:100%;min-height:76px;font-size:17px;padding:10px;border-radius:12px;border:1px solid #cfd4ca;resize:vertical}
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:19px;font-weight:700;color:#fff;background:var(--ok);margin-top:14px}
+  .btn:disabled{background:#c9cfc4;color:#f4f5f2}
+  .hint{margin-top:8px;font-size:14px;color:var(--warn);text-align:center}
+  /* liste */
+  .lh{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 8px}
+  .lh b{font-size:16px}
+  .lh input{width:55%;font-size:16px;padding:8px 10px;border-radius:10px;border:1px solid #cfd4ca}
+  .rw{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px;width:100%;text-align:left}
+  .rw .c{flex:none;font:800 17px ui-monospace,Menlo,Consolas,monospace;min-width:76px}
+  .rw .tx{flex:1;min-width:0}
+  .rw .t1{font-weight:600;font-size:15px}
+  .rw .t2{font-size:13px;color:var(--mute)}
+  .rw.pend{border-left:5px solid var(--warn)}
+  .rw.bad{border-left:5px solid var(--red)}
+  .pnd{font-size:11px;color:var(--warn);font-weight:700}
+  .empty{text-align:center;color:var(--mute);padding:22px 10px;font-size:15px}
+  .ver{text-align:center;color:#a0a69c;font-size:12px;margin-top:18px}
+  /* dialogues */
+  .dlg{position:fixed;inset:0;z-index:30;background:rgba(20,25,18,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+  .dlgbox{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:400px;max-height:92vh;overflow:auto}
+  .dlgbox h2{margin:0 0 6px;font-size:20px}
+  .dlgbox p{margin:0 0 12px;color:var(--mute);font-size:14px}
+  .dlgbox input{width:100%;font-size:18px;padding:12px;border-radius:10px;border:1px solid #cfd4ca;margin-bottom:4px}
+  .ackst{border-radius:12px;padding:12px;font-size:17px;font-weight:700;text-align:center;margin-bottom:12px}
+  .ackst.wait{background:var(--bluebg);color:#24427f}
+  .ackst.ok{background:var(--okbg);color:#14532d}
+  .ackst.off{background:var(--warnbg);color:var(--warn)}
+  .ackst.err{background:var(--redbg);color:var(--red)}
+  .ackhd{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+  .ackhd .c{font:800 30px ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px}
+  .ackhd img{width:56px;height:56px;object-fit:cover;border-radius:10px;margin-left:auto}
+  .ackrow{display:flex;gap:10px;padding:9px 2px;border-top:1px solid var(--line);font-size:17px}
+  .ackrow span{flex:none;width:90px;color:var(--mute);font-size:15px;padding-top:1px}
+  .ackrow b{flex:1;min-width:0;word-wrap:break-word}
+  .ackbtns{display:flex;gap:10px;margin-top:12px}
+  .ackbtns .btn{margin-top:0}
+  .btn.sec{background:#fff;color:var(--blue);border:1px solid #b8cbe6;flex:0 0 40%}
+  #toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(160px);z-index:40;
+    background:#1d2618;color:#fff;padding:12px 16px;border-radius:12px;font-size:15px;max-width:92%;
+    transition:transform .25s,opacity .25s;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.3);opacity:0}
+  #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><div class="title">Belfort · Repose TRV</div><div id="net" class="net">…</div></div>
+  <div class="sub"><span id="count">Chargement…</span><span id="who"></span></div>
+</header>
+
+<main>
+  <section class="card" id="form">
+    <div class="ftitle"><span id="fTitle">Reposer une tête</span><button id="fReset" class="hidden">Tout effacer</button></div>
+
+    <div class="lbl"><b class="n">1</b><strong>Tête</strong> code de l’étiquette (6 caractères)</div>
+    <div class="row">
+      <div class="inp"><input id="fCode" type="text" inputmode="none" maxlength="17" placeholder="ex. 2A3EE6"
+        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next">
+        <button class="x" data-act="clrCode" aria-label="Effacer">✕</button></div>
+      <button class="ib" data-act="micCode" aria-label="Dicter le code">🎤</button>
+      <button class="ib" id="bPhoto" data-act="photo" aria-label="Photo">📷</button>
+    </div>
+    <input id="fFile" type="file" accept="image/*" capture="environment" class="hidden">
+    <div id="headBox"></div>
+    <div id="pad" class="pad"></div>
+    <div id="thumb"></div>
+
+    <div class="lbl"><b class="n">2</b><strong>Lieu</strong> une fois la tête montée</div>
+    <div id="sameBox"></div>
+    <div class="types">
+      <button class="ty" data-ty="C"><b>C</b>Chambre</button>
+      <button class="ty" data-ty="S"><b>S</b>SdB chambre</button>
+      <button class="ty" data-ty="A"><b>A</b>Autre</button>
+    </div>
+    <div class="row">
+      <div class="inp"><input id="fLieu" type="text" placeholder="C113, S113 ou en toutes lettres"
+        autocomplete="off" autocorrect="off" autocapitalize="sentences" enterkeyhint="done">
+        <button class="x" data-act="clrLieu" aria-label="Effacer">✕</button></div>
+      <button class="ib" data-act="micLieu" aria-label="Dicter le lieu">🎤</button>
+    </div>
+    <div id="canon" class="canon miss"></div>
+    <div id="sugs" class="sugs"></div>
+    <div class="floors"><span>Étage</span><button class="fl" data-fl="RDC">RDC</button><button class="fl" data-fl="R+1">R+1</button></div>
+
+    <button class="link" id="obsTgl" data-act="obs">＋ Remarque</button>
+    <div id="obsWrap" class="hidden">
+      <div class="row" style="margin-top:6px"><textarea id="fObs" placeholder="Piles changées, tête abîmée…"></textarea>
+        <button class="ib" data-act="micObs" aria-label="Dicter la remarque">🎤</button></div>
+    </div>
+
+    <button class="btn" id="fSave" disabled>✔ Enregistrer</button>
+    <div class="hint" id="fHint"></div>
+  </section>
+
+  <div class="lh"><b id="lTitle">Reposées</b><input id="lq" type="search" placeholder="Chercher" autocomplete="off"></div>
+  <div id="list"></div>
+  <div class="ver">v1.0 · fonctionne sans réseau</div>
+</main>
+
+<div id="ackDlg" class="dlg hidden">
+  <div class="dlgbox" role="dialog" aria-live="polite">
+    <div id="ackSt" class="ackst wait"></div>
+    <div id="ackBody"></div>
+    <div class="ackbtns"><button class="btn sec" id="ackFix">✎ Corriger</button><button class="btn" id="ackOk">OK, suivante</button></div>
+  </div>
+</div>
+
+<div id="nameDlg" class="dlg hidden">
+  <div class="dlgbox">
+    <h2>Qui pose ?</h2>
+    <p>Ton nom sera inscrit dans le suivi à chaque tête reposée. Il reste mémorisé sur ce téléphone.</p>
+    <input id="nameIn" placeholder="Prénom Nom" autocomplete="name" autocapitalize="words">
+    <button class="btn" id="nameOk">Commencer</button>
+  </div>
+</div>
+
+<div id="keyDlg" class="dlg hidden">
+  <div class="dlgbox">
+    <h2>Code d’accès</h2>
+    <p>Saisis le code d’accès reçu avec le lien de l’appli.</p>
+    <input id="keyIn" placeholder="Code d’accès" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+    <button class="btn" id="keyOk">Valider</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+  /* URL de l'appli Web Apps Script (Déployer > Application Web) */
+  var API = 'https://script.google.com/macros/s/__DEPLOY_ID__/exec';
+
+  var LS = {k:'brt_k', nom:'brt_nom', cache:'brt_cache_v1', q:'brt_queue_v1', floor:'brt_floor'};
+  var heads = [], byE = {}, lieux = [], rep = [], queue = [], nom = '', key = '', floor = '', lastSync = null;
+  var sel = null, ty = '', photo = null, fix = null, online = null, busy = false, ack = null, ackTimer = null;
+  var floorAuto = false, codeKb = false;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---------- outils ---------- */
+  function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function plain(s){ return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
+  function pad3(n){ n = String(parseInt(n, 10)); while (n.length < 3) n = '0' + n; return n; }
+  function hm(ts){ var d = new Date(ts); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+  function dm(ts){ var d = new Date(ts); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + ' ' + hm(ts); }
+  function cap(s){ s = String(s || '').replace(/\s+/g, ' ').trim(); return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+  var SYN = {ch:'chambre', chb:'chambre', chbre:'chambre', sdb:'salle de bain', bains:'bain', reu:'reunion', kine:'kinesitherapie'};
+  function lieuKey(s){ return plain(s).replace(/[^a-z0-9]+/g, ' ').trim().split(' ')
+    .map(function(t){ return /^\d+$/.test(t) ? String(parseInt(t, 10)) : (SYN[t] || t); }).join(' '); }
+  var tt;
+  function toast(msg, ms){ var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(tt); tt = setTimeout(function(){ t.classList.remove('show'); }, ms || 2800); }
+  function isOff(){ return online === false || navigator.onLine === false; }
+  function newId(){ return 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  /* ---------- photos : IndexedDB (repli localStorage) ---------- */
+  var dbp = null;
+  function db(){
+    if (dbp) return dbp;
+    dbp = new Promise(function(res, rej){
+      try {
+        var r = indexedDB.open('brt', 1);
+        r.onupgradeneeded = function(){ r.result.createObjectStore('ph'); };
+        r.onsuccess = function(){ res(r.result); };
+        r.onerror = function(){ rej(r.error); };
+      } catch (e) { rej(e); }
+    });
+    return dbp;
+  }
+  function phPut(k, v){
+    return db().then(function(d){ return new Promise(function(res, rej){
+      var t = d.transaction('ph', 'readwrite'); t.objectStore('ph').put(v, k);
+      t.oncomplete = function(){ res(true); }; t.onerror = function(){ rej(t.error); }; }); })
+      .catch(function(){ return lsSet('ph_' + k, v); });
+  }
+  function phGet(k){
+    return db().then(function(d){ return new Promise(function(res){
+      var r = d.transaction('ph').objectStore('ph').get(k);
+      r.onsuccess = function(){ res(r.result || lsGet('ph_' + k)); }; r.onerror = function(){ res(lsGet('ph_' + k)); }; }); })
+      .catch(function(){ return lsGet('ph_' + k); });
+  }
+  function phDel(k){
+    try { localStorage.removeItem('ph_' + k); } catch (e) {}
+    return db().then(function(d){ d.transaction('ph', 'readwrite').objectStore('ph').delete(k); }).catch(function(){});
+  }
+  function compress(file){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function(){
+        var M = 1280, w = img.naturalWidth, h = img.naturalHeight, r = Math.min(1, M / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w * r); c.height = Math.round(h * r);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('image')); };
+      img.src = url;
+    });
+  }
+
+  /* ---------- lecture d'un code tapé ou dicté ---------- */
+  var HEXW = {a:'A', ah:'A', b:'B', be:'B', bee:'B', bay:'B', c:'C', ce:'C', ces:'C', ses:'C', se:'C', sait:'C',
+    d:'D', de:'D', des:'D', dee:'D', e:'E', eu:'E', euh:'E', oeuf:'E', heu:'E', f:'F', ef:'F', eff:'F', effe:'F',
+    zero:'0', un:'1', une:'1', deux:'2', trois:'3', quatre:'4', cinq:'5', six:'6', sept:'7', set:'7', huit:'8', neuf:'9'};
+  function parseHex(text){
+    var s = plain(text).replace(/c\W?est/g, 'c ').replace(/[^a-z0-9]+/g, ' ').trim();
+    if (!s) return '';
+    var tk = s.split(' '), out = '', dbl = false;
+    for (var i = 0; i < tk.length; i++) {
+      var t = tk[i], v = '';
+      if (t === 'double') { dbl = true; continue; }
+      if (HEXW[t]) v = HEXW[t];
+      else if (/^[0-9a-f]+$/.test(t)) v = t.toUpperCase();
+      else continue;
+      out += dbl ? v + v : v; dbl = false;
+    }
+    return out.length > 6 ? out.slice(-6) : out;
+  }
+  function cleanCode(v){ var s = String(v || '').toUpperCase().replace(/[^0-9A-F]/g, ''); return s.length > 6 ? s.slice(-6) : s; }
+  function lev1(a, b){ if (a.length !== b.length) return false; var d = 0; for (var i = 0; i < a.length; i++) if (a[i] !== b[i] && ++d > 1) return false; return true; }
+  function candidates(s){
+    if (!s) return [];
+    var pre = [], mid = [], near = [];
+    heads.forEach(function(h){
+      if (h.e === s) return;
+      if (h.e.indexOf(s) === 0) pre.push(h);
+      else if (h.e.indexOf(s) > 0) mid.push(h);
+      else if (s.length === 6 && lev1(h.e, s)) near.push(h);
+    });
+    return pre.concat(mid, near).slice(0, 6);
+  }
+
+  /* ---------- lecture d'un lieu tapé ou dicté ---------- */
+  function parseLieu(text){
+    var raw = String(text || '').trim(), s = plain(raw).replace(/c\W?est/g, 'c ').replace(/\s+/g, ' ').trim();
+    if (!s) return {k:'', txt:''};
+    var m = /(\d{1,3})/.exec(s), num = m ? parseInt(m[1], 10) : null;
+    var bain = /\b(s|sdb|sb|salle de bains?|bains?|douche)\b/.test(s);
+    var ch = /^(c|ch|chb|chbre|chambre)\b/.test(s) || /^c\s?\d/.test(s);
+    // autre chose qu'un n° de chambre + radiateur/SdB (ex. « Chambre 001 d'apprentissage - Séjour ») : texte libre
+    var rest = s.replace(/^(c|ch|chb|chbre|chambre|s|sdb|sb|salle de bains?|bains?|douche)(?=\s|\d|$)/, '').replace(/\d{1,3}/, '')
+      .replace(/\b(radiateur|rad|chauffage|chauff|chauf|sdb|sb|salle|de|du|bains?|douche|la|chambre)\b/g, '').replace(/[^a-z]/g, '');
+    if (num !== null && rest) return {k:'T', txt: cap(raw)};
+    if (num !== null && /^(s|sdb|sb)\s?\d/.test(s)) return {k:'S', num:num};
+    if (num !== null && ch) return {k: bain ? 'S' : 'C', num:num};
+    if (num !== null && /^(salle de bains?|bains?|douche)\b/.test(s)) return {k:'S', num:num};
+    if (/^a(\s|$)/.test(s)) return {k:'A', txt: cap(raw.replace(/^\s*a\s*/i, ''))};
+    return {k:'T', txt: cap(raw)};
+  }
+  function floorOfNum(n){ return n < 100 ? 'RDC' : (n < 200 ? 'R+1' : ''); }
+  function canonLieu(p){
+    if (p.k === 'C') return {l:'Chambre ' + pad3(p.num) + ' - Radiateur', n: floorOfNum(p.num)};
+    if (p.k === 'S') return {l:'Chambre ' + pad3(p.num) + ' - SdB', n: floorOfNum(p.num)};
+    if (!p.txt) return null;
+    var k = lieuKey(p.txt);
+    for (var i = 0; i < lieux.length; i++) if (lieux[i].key === k) return {l: lieux[i].l, n: lieux[i].n};
+    return {l: p.txt, n: ''};
+  }
+  function lieuSugs(text){
+    var p = parseLieu(text), q = p.k === 'C' || p.k === 'S' ? 'chambre ' + p.num : lieuKey(p.txt || '');
+    if (!q) return [];
+    var qt = q.split(' ');
+    var res = lieux.filter(function(x){
+      var kt = x.key.split(' ');
+      return qt.every(function(t){ return kt.some(function(w){ return w.indexOf(t) === 0; }); });
+    });
+    var c = canonLieu(p);
+    if (c) res = res.filter(function(x){ return x.key !== lieuKey(c.l); });
+    return res.slice(0, 8);
+  }
+
+  /* ---------- données ---------- */
+  function setData(d){
+    heads = (d.heads || []).slice(); byE = {}; heads.forEach(function(h){ byE[h.e] = h; });
+    var seen = {}; lieux = [];
+    (d.lieux || []).forEach(function(x){ var k = lieuKey(x.l); if (!k || seen[k]) return; seen[k] = 1; lieux.push({l:x.l, n:x.n, key:k}); });
+    lieux.sort(function(a, b){ return a.l.localeCompare(b.l, 'fr', {numeric:true, sensitivity:'base'}); });
+    rep = d.rep || [];
+    if (d.t) lastSync = d.t;
+    lsSet(LS.cache, {t:lastSync, heads:heads, lieux:d.lieux || [], rep:rep});
+  }
+  /* Vue fusionnée : serveur + saisies en attente (la plus récente gagne) */
+  function merged(){
+    var m = {}, order = [];
+    function put(x){ var k = x.e || x.id; if (!m[k]) order.push(k); m[k] = x; }
+    rep.forEach(function(r){ if (!/^Annul/.test(r.st)) put({e:r.e, l:r.l, n:r.n, d:r.d, by:r.by, o:r.o, st:r.st, id:r.id, ph:r.ph}); });
+    queue.forEach(function(q){
+      if (q.fix && q.fix !== (q.e || q.id) && m[q.fix]) { delete m[q.fix]; }
+      put({e:q.e, l:q.l, n:q.n, d:dm(q.ts), by:q.nom, o:q.o, st: q.err ? 'Erreur : ' + q.err : 'à envoyer', id:q.id, pend:true, ts:q.ts});
+    });
+    return order.filter(function(k){ return m[k]; }).map(function(k){ return m[k]; });
+  }
+  function doneFor(e){ if (!e) return null; var l = merged(); for (var i = 0; i < l.length; i++) if (l[i].e === e) return l[i]; return null; }
+  function atPlace(lieu, except){
+    var k = lieuKey(lieu); if (!k) return [];
+    return merged().filter(function(x){ return lieuKey(x.l) === k && (x.e || x.id) !== except; });
+  }
+
+  /* ---------- réseau ---------- */
+  function setOnline(v){
+    online = v;
+    var n = $('net'); n.className = 'net ' + (v ? 'on' : 'off');
+    n.textContent = (v ? 'En ligne' : 'Hors ligne') + (queue.length ? ' · ' + queue.length + ' en attente' : '');
+  }
+  function apiReady(){ return API.indexOf('__DEPLOY') < 0 && !!key; }
+  function call(method, body, ms){
+    var ctl = window.AbortController ? new AbortController() : null;
+    var to = setTimeout(function(){ if (ctl) ctl.abort(); }, ms || 20000);
+    var url = method === 'GET' ? API + '?action=data&k=' + encodeURIComponent(key) : API;
+    var opt = method === 'GET' ? {method:'GET', cache:'no-store'} : {method:'POST', body: JSON.stringify(body)};
+    if (ctl) opt.signal = ctl.signal;
+    return fetch(url, opt).then(function(r){ clearTimeout(to); return r.json(); },
+                                function(e){ clearTimeout(to); throw e; });
+  }
+  function refresh(){
+    if (!apiReady()) return;
+    call('GET').then(function(d){
+      if (d && d.ok) { setOnline(true); setData(d); renderAll(); }
+      else if (d && d.err === 'auth') authFail();
+    }).catch(function(){ setOnline(false); });
+  }
+  function flush(){
+    if (busy || !queue.length || !apiReady()) return;
+    busy = true;
+    var q = queue[0];
+    (q.ph ? phGet(q.id) : Promise.resolve(null)).then(function(ph){
+      var e = {id:q.id, e:q.e, l:q.l, n:q.n, o:q.o, ts:q.ts, nom:q.nom, fix:q.fix || ''};
+      return call('POST', {k:key, action:'save', entry:e, photo: ph ? {b64:ph, type:'image/jpeg'} : null}, 60000);
+    }).then(function(res){
+      busy = false;
+      if (res && res.ok) {
+        queue = queue.filter(function(x){ return x.id !== q.id; });
+        lsSet(LS.q, queue); if (q.ph) phDel(q.id);
+        setOnline(true);
+        if (res.data) setData(res.data);
+        renderAll(); ackUpdate();
+        if (queue.length) setTimeout(flush, 200);
+      } else if (res && res.err === 'auth') { authFail(); }
+      else {
+        q.err = (res && res.err) || 'inconnue'; lsSet(LS.q, queue);
+        setOnline(true); renderAll(); ackUpdate(true);
+        toast('Erreur serveur sur une saisie : ' + q.err, 5000);
+      }
+    }).catch(function(){ busy = false; setOnline(false); ackUpdate(true); });
+  }
+  function tick(){ if (queue.length) flush(); else refresh(); }
+  function authFail(){ key = ''; lsSet(LS.k, ''); askKey(); }
+
+  /* ---------- rendu ---------- */
+  function renderHeader(){
+    var l = merged(), n = l.filter(function(x){ return x.e; }).length;
+    $('count').textContent = 'Reposées : ' + n + (lastSync ? '' : ' · liste des têtes non chargée');
+    $('who').textContent = nom ? '👷 ' + nom : 'Mon nom';
+    setOnline(online === null ? navigator.onLine !== false : online);
+  }
+  function renderPad(){
+    var p = $('pad');
+    if (sel) { p.classList.add('hidden'); return; }
+    p.classList.remove('hidden');
+    if (p.childNodes.length) return;
+    var K = ['1','2','3','A','B','4','5','6','C','D','7','8','9','E','F','✕','0','⌫'], h = '';
+    K.forEach(function(k){
+      var c = /[A-F]/.test(k) ? 'l' : (k === '⌫' ? 'w' : (k === '✕' ? 's' : ''));
+      h += '<button class="' + c + '" data-key="' + k + '">' + (k === '✕' ? 'Effacer' : k) + '</button>';
+    });
+    p.innerHTML = h;
+  }
+  function renderHead(){
+    var b = $('headBox'), v = cleanCode($('fCode').value);
+    if (sel) {
+      var h = byE[sel], d = doneFor(sel), x = '<div class="head"><div class="c">' + esc(sel) + '</div><div class="t">';
+      if (h) x += 'Octobre : <b>' + esc(h.p || '(emplacement non noté)') + '</b>' + (h.n ? ' · ' + esc(h.n) : '');
+      else x += '<b>Code hors liste</b> : vérifie l’étiquette, ou prends une photo.';
+      x += '</div><button data-act="editCode">Modifier</button></div>';
+      if (d && !(fix && fix === sel)) x += '<div class="note in">Déjà reposée : ' + esc(d.l) + ' (' + esc(d.d || '') + '). Enregistrer la déplace ici.</div>';
+      b.innerHTML = x; return;
+    }
+    if (!v) { b.innerHTML = ''; return; }
+    var c = candidates(v);
+    if (v.length === 6 && !byE[v]) {
+      b.innerHTML = '<div class="note wa">' + esc(v) + ' absent de la liste.' + (c.length ? ' Peut-être :' : '') + '</div>' +
+        (c.length ? candHtml(c) : '') + '<div class="cands"><button class="cand" data-pick="' + esc(v) + '"><b>' + esc(v) + '</b><small>garder ce code</small></button></div>';
+      return;
+    }
+    b.innerHTML = c.length ? candHtml(c) : (heads.length ? '<div class="note wa">Aucune tête ne contient « ' + esc(v) + ' ».</div>' : '');
+  }
+  function candHtml(c){
+    return '<div class="cands">' + c.map(function(h){
+      return '<button class="cand" data-pick="' + esc(h.e) + '"><b>' + esc(h.e) + '</b><small>' + esc(h.p || '') + '</small></button>'; }).join('') + '</div>';
+  }
+  function renderThumb(){
+    $('bPhoto').classList.toggle('has', !!photo);
+    $('thumb').innerHTML = photo ? '<div class="thumb"><img src="' + photo + '" alt=""><span style="flex:1;font-size:14px;color:var(--mute)">Photo prise' +
+      (sel ? '' : ' · le code pourra être lu sur la photo') + '</span><button data-act="delPhoto">Supprimer</button></div>' : '';
+  }
+  function curLieu(){ var p = parseLieu($('fLieu').value); return canonLieu(p); }
+  function renderLieu(){
+    document.querySelectorAll('.ty').forEach(function(b){ b.classList.toggle('sel', b.getAttribute('data-ty') === ty); });
+    var h = sel && byE[sel], sb = $('sameBox');
+    sb.innerHTML = h && h.p ? '<button class="same" data-act="same">↩ Même lieu qu’en octobre : <b>' + esc(h.p) + '</b></button>' : '';
+    var c = curLieu(), cn = $('canon');
+    if (c && c.l) {
+      var others = atPlace(c.l, sel || (fix || ''));
+      cn.className = 'canon'; cn.innerHTML = '→ ' + esc(c.l) +
+        (others.length ? '<div class="note in" style="font-weight:400">Déjà ici : ' + others.map(function(o){ return esc(o.e || 'photo'); }).join(', ') + '</div>' : '');
+      if (c.n && (floorAuto || !floor)) { floor = c.n; floorAuto = true; }
+    } else { cn.className = 'canon miss'; cn.textContent = ty === 'C' || ty === 'S' ? 'Tape le n° de chambre' : ''; }
+    var s = lieuSugs($('fLieu').value);
+    $('sugs').innerHTML = s.map(function(x){ return '<button class="sug" data-sug="' + esc(x.l) + '" data-fl="' + esc(x.n) + '">' + esc(x.l) + (x.n ? '<small>' + esc(x.n) + '</small>' : '') + '</button>'; }).join('');
+    document.querySelectorAll('.fl').forEach(function(b){ b.classList.toggle('sel', b.getAttribute('data-fl') === floor); });
+  }
+  function codeOk(){ return !!sel || !!photo; }
+  function renderForm(){
+    var c = curLieu(), ok = codeOk() && c && c.l && floor;
+    $('fSave').disabled = !ok;
+    $('fSave').textContent = fix ? '✔ Enregistrer la correction' : '✔ Enregistrer';
+    var miss = [];
+    if (!codeOk()) miss.push('le code (ou une photo)');
+    if (!(c && c.l)) miss.push('le lieu');
+    if (!floor) miss.push('l’étage');
+    $('fHint').textContent = miss.length && miss.length < 3 ? 'À compléter : ' + miss.join(', ') : '';
+    var dirty = sel || $('fCode').value || $('fLieu').value || photo || $('fObs').value || fix;
+    $('fReset').classList.toggle('hidden', !dirty);
+    $('fReset').textContent = fix ? 'Annuler la correction' : 'Tout effacer';
+    $('fTitle').textContent = fix ? 'Corriger ' + (fix.length === 6 ? fix : 'la saisie') : 'Reposer une tête';
+  }
+  function renderList(){
+    var q = lieuKey($('lq').value), up = cleanCode($('lq').value);
+    var l = merged().slice().reverse().filter(function(x){
+      if (!q) return true;
+      return (up && (x.e || '').indexOf(up) >= 0) || lieuKey(x.l).indexOf(q) >= 0;
+    });
+    $('lTitle').textContent = 'Reposées (' + merged().length + ')';
+    if (!l.length) { $('list').innerHTML = '<div class="empty">' + (q ? 'Rien pour cette recherche.' : 'Aucune tête reposée pour l’instant.') + '</div>'; return; }
+    $('list').innerHTML = l.map(function(x){
+      var bad = /^Erreur|hors liste|lire|manquant/i.test(x.st || '');
+      return '<button class="rw' + (x.pend ? ' pend' : '') + (bad && !x.pend ? ' bad' : '') + '" data-edit="' + esc(x.e || x.id) + '">' +
+        '<span class="c">' + esc(x.e || '📷') + '</span><span class="tx"><div class="t1">' + esc(x.l) + '</div>' +
+        '<div class="t2">' + esc((x.n ? x.n + ' · ' : '') + (x.d || '') + (x.by ? ' · ' + x.by : '')) +
+        (x.pend ? ' <span class="pnd">' + esc(x.st) + '</span>' : (x.st && x.st !== 'Posée' ? ' · ' + esc(x.st) : '')) + '</div></span></button>';
+    }).join('');
+  }
+  function renderAll(){ renderHeader(); renderPad(); renderHead(); renderThumb(); renderLieu(); renderForm(); renderList(); }
+
+  /* ---------- actions ---------- */
+  function setCode(v){
+    $('fCode').value = v; sel = null;
+    var c = cleanCode(v);
+    if (c.length === 6 && byE[c]) pick(c); else renderAll();
+  }
+  function pick(e){
+    sel = e; $('fCode').value = e; $('fCode').blur(); codeKbOff();
+    renderAll();
+  }
+  function editCode(){ sel = null; renderAll(); }
+  function setTy(t){
+    ty = ty === t ? '' : t;
+    var f = $('fLieu'), v = f.value.trim(), p = parseLieu(v);
+    if (ty === 'C' || ty === 'S') {
+      f.value = ty + (p.num != null ? p.num : (/^\d+$/.test(v) ? v : ''));
+      f.setAttribute('inputmode', 'numeric');
+    } else {
+      f.setAttribute('inputmode', 'text');
+      if (ty === 'A' && /^[CS]\d*$/i.test(v)) f.value = '';
+    }
+    floorAuto = true;
+    renderAll();
+    f.focus();
+    if (ty === 'C' || ty === 'S') { var n = f.value.length; try { f.setSelectionRange(n, n); } catch (e) {} }
+  }
+  function lieuInput(){
+    var f = $('fLieu'), v = f.value;
+    if ((ty === 'C' || ty === 'S') && /^\d/.test(v)) f.value = ty + v;      // pavé numérique : on garde la lettre
+    if ((ty === 'C' || ty === 'S') && v === '') ty = '';
+    floorAuto = true;
+    renderAll();
+  }
+  function clearForm(){
+    sel = null; photo = null; fix = null; ty = '';
+    $('fCode').value = ''; $('fLieu').value = ''; $('fObs').value = '';
+    $('fLieu').setAttribute('inputmode', 'text');
+    $('obsWrap').classList.add('hidden'); $('obsTgl').classList.remove('hidden');
+    phDel('draft');
+  }
+  function save(){
+    if (!nom) { askName(); return; }
+    var c = curLieu(); if (!(codeOk() && c && c.l && floor)) { renderForm(); return; }
+    stopDictation();
+    var ts = Date.now(), id = newId();
+    var q = {id:id, e: sel || '', l: c.l, n: floor, o: $('fObs').value.trim(), ts: ts, nom: nom, fix: fix || '', ph: !!photo};
+    var ph = photo;
+    // Corriger une saisie encore en attente : on la remplace
+    if (fix) {
+      var old = queue.filter(function(x){ return (x.e || x.id) === fix; })[0];
+      if (old) {
+        queue = queue.filter(function(x){ return x !== old; }); if (old.ph && old.id !== id) phDel(old.id);
+        q.fix = old.fix || (rep.some(function(r){ return (r.e || r.id) === fix; }) ? fix : '');
+      }
+    }
+    (ph ? phPut(id, ph) : Promise.resolve(true)).then(function(){
+      queue.push(q);
+      if (!lsSet(LS.q, queue)) toast('Mémoire du téléphone pleine : envoie les saisies dès que possible', 5000);
+      ack = {id:id, e:q.e, l:q.l, n:q.n, o:q.o, ts:ts, ph:ph, st: isOff() ? 'off' : 'wait', fixed: !!fix};
+      clearForm(); renderAll(); showAck(); flush();
+    });
+  }
+  function loadForEdit(k){
+    var x = merged().filter(function(m){ return (m.e || m.id) === k; })[0]; if (!x) return;
+    clearForm();
+    fix = k;
+    if (x.e) { sel = x.e; $('fCode').value = x.e; }
+    $('fLieu').value = x.l; floor = x.n || floor; floorAuto = false;
+    if (x.o) { $('fObs').value = x.o; $('obsWrap').classList.remove('hidden'); $('obsTgl').classList.add('hidden'); }
+    var q = queue.filter(function(m){ return m.id === x.id; })[0];
+    (q && q.ph ? phGet(q.id) : Promise.resolve(null)).then(function(p){ if (p) photo = p; renderAll(); });
+    renderAll(); window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  /* ---------- confirmation ---------- */
+  function showAck(){
+    clearTimeout(ackTimer);
+    ackTimer = setTimeout(function(){ if (ack && ack.st === 'wait') { ack.st = 'slow'; renderAck(); } }, 12000);
+    $('fCode').blur(); $('fLieu').blur();
+    $('ackDlg').classList.remove('hidden');
+    ackUpdate();
+  }
+  function ackUpdate(failed){
+    if (!ack) return;
+    if (ack.st !== 'ok') {
+      var q = queue.filter(function(x){ return x.id === ack.id; })[0];
+      if (!q) ack.st = 'ok'; else if (q.err) ack.st = 'err'; else if (failed) ack.st = 'off';
+    }
+    renderAck();
+  }
+  function renderAck(){
+    if (!ack) return;
+    var ST = {wait:['wait', '⏳ Envoi en cours…'], ok:['ok', '✅ Enregistrée dans le suivi'],
+      slow:['wait', '⏳ Réseau lent : envoi en cours. La saisie est gardée sur ce téléphone.'],
+      off:['off', '📴 Pas de réseau : saisie gardée sur ce téléphone. Elle partira seule au retour du réseau.'],
+      err:['err', '⚠ Refusée par le serveur. Gardée sur ce téléphone.']};
+    var s = ST[ack.st]; $('ackSt').className = 'ackst ' + s[0]; $('ackSt').textContent = s[1];
+    var h = byE[ack.e];
+    $('ackBody').innerHTML = '<div class="ackhd"><div class="c">' + esc(ack.e || '📷') + '</div>' +
+      '<div style="font-size:14px;color:var(--mute)">' + (ack.e ? (h ? 'Octobre : ' + esc(h.p) : 'Code hors liste') : 'Code à lire sur la photo') + '</div>' +
+      (ack.ph ? '<img src="' + ack.ph + '" alt="">' : '') + '</div>' +
+      '<div class="ackrow"><span>Lieu</span><b>' + esc(ack.l) + '</b></div>' +
+      '<div class="ackrow"><span>Étage</span><b>' + esc(ack.n) + '</b></div>' +
+      (ack.o ? '<div class="ackrow"><span>Remarque</span><b>' + esc(ack.o) + '</b></div>' : '') +
+      '<div class="ackrow"><span>Par</span><b>' + esc(nom) + ' · ' + hm(ack.ts) + '</b></div>';
+  }
+  function ackOk(){ clearTimeout(ackTimer); ack = null; $('ackDlg').classList.add('hidden'); window.scrollTo({top:0}); }
+  function ackFix(){
+    var a = ack; if (!a) return;
+    clearTimeout(ackTimer); ack = null; $('ackDlg').classList.add('hidden');
+    loadForEdit(a.e || a.id);
+  }
+
+  /* ---------- dictée ---------- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null, recBtn = null;
+  function stopDictation(){ if (rec) { try { rec.stop(); } catch (e) {} rec = null; } if (recBtn) recBtn.classList.remove('rec'); recBtn = null; }
+  function codeKbOn(){ codeKb = true; $('fCode').setAttribute('inputmode', 'text'); }
+  function codeKbOff(){ if (!codeKb) return; codeKb = false; $('fCode').setAttribute('inputmode', 'none'); }
+  function keyboardHint(k){
+    var f = k === 'code' ? $('fCode') : (k === 'lieu' ? $('fLieu') : $('fObs'));
+    if (k === 'code') { sel = null; renderAll(); codeKbOn(); }
+    if (k === 'lieu') f.setAttribute('inputmode', 'text');
+    f.blur(); setTimeout(function(){ f.focus(); }, 30);
+    toast(k === 'code' ? 'Touche le micro 🎤 du clavier et épelle le code, ex. « 2 A 3 E E 6 »' : 'Touche le micro 🎤 du clavier pour dicter', 4500);
+  }
+  function dictate(k, btn){
+    if (rec) { stopDictation(); return; }
+    if (k === 'obs') { $('obsWrap').classList.remove('hidden'); $('obsTgl').classList.add('hidden'); }
+    if (!SR || isOff()) { keyboardHint(k); return; }
+    try {
+      rec = new SR(); rec.lang = 'fr-FR'; rec.interimResults = k === 'obs'; rec.continuous = false; rec.maxAlternatives = 3;
+      var base = k === 'obs' && $('fObs').value ? $('fObs').value.replace(/\s*$/, ' ') : '';
+      rec.onresult = function(ev){
+        var r = ev.results[ev.results.length - 1], t = '';
+        for (var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+        if (k === 'code') {
+          var best = '';
+          for (var j = 0; j < r.length; j++) { var h = parseHex(r[j].transcript); if (!best && h.length === 6 && byE[h]) best = h; }
+          setCode(best || parseHex(r[0].transcript));
+        } else if (k === 'lieu') { ty = ''; $('fLieu').value = cap(t); floorAuto = true; renderAll(); }
+        else { $('fObs').value = base + cap(t); renderForm(); }
+        if (r.isFinal && k !== 'obs') stopDictation();
+      };
+      rec.onerror = function(ev){ var er = ev.error; stopDictation(); if (er !== 'no-speech' && er !== 'aborted') keyboardHint(k); };
+      rec.onend = function(){ rec = null; if (recBtn) recBtn.classList.remove('rec'); recBtn = null; };
+      rec.start(); recBtn = btn; btn.classList.add('rec');
+    } catch (e) { rec = null; keyboardHint(k); }
+  }
+
+  /* ---------- nom et code d'accès (gardés aussi dans l'adresse, pour l'écran d'accueil) ---------- */
+  function syncUrl(){
+    try {
+      var u = new URL(location.href);
+      if (key) u.searchParams.set('k', key);
+      if (nom) u.searchParams.set('nom', nom); else u.searchParams.delete('nom');
+      if (u.href !== location.href) history.replaceState(null, '', u.href);
+    } catch (e) {}
+  }
+  function askName(){ $('nameIn').value = nom; $('nameDlg').classList.remove('hidden'); setTimeout(function(){ $('nameIn').focus(); }, 100); }
+  function setName(){ var v = $('nameIn').value.trim(); if (!v) { $('nameIn').focus(); return; }
+    nom = v.slice(0, 60); lsSet(LS.nom, nom); syncUrl(); $('nameDlg').classList.add('hidden'); renderHeader(); }
+  function askKey(){ $('keyDlg').classList.remove('hidden'); setTimeout(function(){ $('keyIn').focus(); }, 100); }
+  function setKey(){ var v = $('keyIn').value.trim().toLowerCase(); if (!v) return;
+    key = v; lsSet(LS.k, key); syncUrl(); $('keyDlg').classList.add('hidden'); if (!nom) askName(); tick(); }
+
+  /* ---------- événements ---------- */
+  $('pad').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-key]'); if (!b) return;
+    var k = b.getAttribute('data-key'), v = cleanCode($('fCode').value);
+    if (k === '⌫') v = v.slice(0, -1); else if (k === '✕') v = ''; else if (v.length < 6) v += k;
+    setCode(v);
+  });
+  $('fCode').addEventListener('input', function(){
+    var raw = $('fCode').value, v = /[^0-9a-fA-F:\-\s]/.test(raw) ? parseHex(raw) : cleanCode(raw);
+    sel = null;
+    if (v.length === 6 && byE[v]) { pick(v); return; }
+    renderAll();
+  });
+  $('fCode').addEventListener('blur', function(){ setTimeout(function(){
+    if (codeKb) { var v = parseHex($('fCode').value) || cleanCode($('fCode').value); codeKbOff(); setCode(v); } }, 150); });
+  $('fCode').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault();
+    var v = cleanCode($('fCode').value), c = candidates(v); if (byE[v]) pick(v); else if (c.length === 1) pick(c[0].e); else $('fCode').blur(); } });
+  $('fFile').addEventListener('change', function(){
+    var f = this.files && this.files[0]; this.value = ''; if (!f) return;
+    compress(f).then(function(d){ photo = d; phPut('draft', d); renderAll(); toast('Photo enregistrée sur le téléphone'); })
+      .catch(function(){ toast('Photo illisible, recommence'); });
+  });
+  $('fLieu').addEventListener('input', lieuInput);
+  $('fLieu').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') { ev.preventDefault(); $('fLieu').blur(); } });
+  $('fObs').addEventListener('input', renderForm);
+  $('fSave').addEventListener('click', save);
+  $('fReset').addEventListener('click', function(){ stopDictation(); clearForm(); renderAll(); });
+  $('ackOk').addEventListener('click', ackOk);
+  $('ackFix').addEventListener('click', ackFix);
+  $('lq').addEventListener('input', renderList);
+  $('who').addEventListener('click', askName);
+  $('nameOk').addEventListener('click', setName);
+  $('nameIn').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') setName(); });
+  $('keyOk').addEventListener('click', setKey);
+  $('keyIn').addEventListener('keydown', function(ev){ if (ev.key === 'Enter') setKey(); });
+  document.addEventListener('click', function(ev){
+    var t = ev.target.closest('[data-act],[data-pick],[data-ty],[data-sug],[data-fl],[data-edit]'); if (!t) return;
+    if (t.closest('#pad')) return;
+    if (t.hasAttribute('data-pick')) { pick(t.getAttribute('data-pick')); return; }
+    if (t.hasAttribute('data-ty')) { setTy(t.getAttribute('data-ty')); return; }
+    if (t.hasAttribute('data-sug')) { ty = ''; $('fLieu').value = t.getAttribute('data-sug'); $('fLieu').setAttribute('inputmode', 'text');
+      var fl = t.getAttribute('data-fl'); if (fl) { floor = fl; floorAuto = false; } $('fLieu').blur(); renderAll(); return; }
+    if (t.hasAttribute('data-fl')) { floor = t.getAttribute('data-fl'); floorAuto = false; lsSet(LS.floor, floor); renderAll(); return; }
+    if (t.hasAttribute('data-edit')) { loadForEdit(t.getAttribute('data-edit')); return; }
+    var a = t.getAttribute('data-act');
+    if (a === 'clrCode') { setCode(''); }
+    else if (a === 'clrLieu') { ty = ''; $('fLieu').value = ''; $('fLieu').setAttribute('inputmode', 'text'); renderAll(); $('fLieu').focus(); }
+    else if (a === 'micCode') dictate('code', t);
+    else if (a === 'micLieu') dictate('lieu', t);
+    else if (a === 'micObs') dictate('obs', t);
+    else if (a === 'photo') $('fFile').click();
+    else if (a === 'delPhoto') { photo = null; phDel('draft'); renderAll(); }
+    else if (a === 'editCode') editCode();
+    else if (a === 'same') { var h = byE[sel]; if (h) { ty = ''; $('fLieu').value = h.p; if (h.n) { floor = h.n; floorAuto = false; } renderAll(); } }
+    else if (a === 'obs') { $('obsWrap').classList.remove('hidden'); $('obsTgl').classList.add('hidden'); $('fObs').focus(); }
+  });
+  window.addEventListener('online', tick);
+  window.addEventListener('offline', function(){ setOnline(false); });
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) tick(); });
+
+  /* ---------- service worker (hors ligne) ---------- */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(function(r){ if (navigator.onLine) r.update(); }).catch(function(){});
+  }
+
+  /* ---------- démarrage ---------- */
+  var u = null; try { u = new URL(location.href); } catch (e) {}
+  key = (u && u.searchParams.get('k')) || lsGet(LS.k) || '';
+  nom = lsGet(LS.nom) || (u && u.searchParams.get('nom')) || '';
+  if (key) lsSet(LS.k, key);
+  if (nom) lsSet(LS.nom, nom);
+  queue = lsGet(LS.q) || [];
+  var f0 = lsGet(LS.floor); if (f0 === 'RDC' || f0 === 'R+1') floor = f0;
+  var c0 = lsGet(LS.cache); if (c0 && c0.heads) setData(c0);
+  phGet('draft').then(function(p){ if (p && !photo) { photo = p; renderAll(); } });
+  syncUrl();
+  renderAll();
+  if (!key) askKey(); else if (!nom) askName();
+  tick();
+  setInterval(tick, 30000);
+})();
+</script>
+</body>
+</html>
